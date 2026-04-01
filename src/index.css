@@ -1,0 +1,110 @@
+/* ===== Global Reset & Variables ===== */
+:root {
+  --bg-primary: #fdf8f4;
+  --bg-white: #ffffff;
+  --orange: #e8752a;
+  --orange-hover: #d4651f;
+  --navy: #1a2332;
+  --text-dark: #1e293b;
+  --text-muted: #5b7a9d;
+  --text-light: #94a3b8;
+  --border-light: #d1d5db;
+  --btn-secondary-bg: #e8eef4;
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* ===== Dark Theme ===== */
+[data-theme="dark"] {
+  --bg-primary: #0f1724;
+  --bg-white: #1a2332;
+  --navy: #f1f5f9;
+  --text-dark: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+  --border-light: #2d3a4d;
+  --btn-secondary-bg: #1e293b;
+}
+
+[data-theme="dark"] body {
+  background-color: #0f1724;
+}
+
+[data-theme="dark"] .login-container,
+[data-theme="dark"] .signup-container,
+[data-theme="dark"] .splash-container {
+  background-color: #0f1724;
+}
+
+[data-theme="dark"] .login-card,
+[data-theme="dark"] .signup-card,
+[data-theme="dark"] .splash-card {
+  background: #1a2332;
+}
+
+[data-theme="dark"] .float-label {
+  background: #1a2332;
+}
+
+[data-theme="dark"] .input-group.floating-label input:focus ~ .float-label,
+[data-theme="dark"] .input-group.floating-label.has-value .float-label,
+[data-theme="dark"] .password-wrapper input:focus ~ .float-label,
+[data-theme="dark"] .input-group.floating-label.has-value .password-wrapper .float-label {
+  background: #1a2332;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #ffffff;
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+}
+
+input {
+  outline: none;
+  border: none;
+  font-family: var(--font-body);
+}
+
+select {
+  outline: none;
+  font-family: var(--font-body);
+}
+

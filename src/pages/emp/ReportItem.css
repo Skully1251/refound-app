@@ -1,0 +1,224 @@
+/* ===== Report Item Form ===== */
+.report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+}
+
+.report-image-upload {
+  margin-bottom: 4px;
+}
+
+.report-image-label {
+  display: block;
+  cursor: pointer;
+}
+
+.report-image-placeholder {
+  width: 100%;
+  height: 160px;
+  border: 2px dashed var(--border-light);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--bg-white);
+  transition: border-color 0.2s;
+}
+
+.report-image-placeholder span {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.report-image-hint {
+  font-size: 0.72rem !important;
+  color: var(--text-light) !important;
+  opacity: 0.7;
+}
+
+.report-image-placeholder:hover {
+  border-color: var(--orange);
+}
+
+.report-image-preview {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.report-upload-status {
+  display: block;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--orange);
+  font-weight: 600;
+  margin-top: 6px;
+  animation: pulse-text 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.report-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.report-input, .report-select {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-white);
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  font-family: var(--font-body);
+  transition: border-color 0.2s;
+}
+
+.report-input:focus, .report-select:focus {
+  border-color: var(--orange);
+  outline: none;
+}
+
+.report-textarea {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-white);
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  font-family: var(--font-body);
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color 0.2s;
+}
+
+.report-textarea:focus {
+  border-color: var(--orange);
+  outline: none;
+}
+
+/* Questions */
+.report-questions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report-questions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.report-questions-hint {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.report-preset-toggle {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--orange);
+  background: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.report-preset-toggle:hover {
+  background: #fce8da;
+}
+
+/* Question-Answer row */
+.report-qa-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.report-qa-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.report-qa-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-q-input {
+  padding: 10px 14px;
+  font-size: 0.85rem;
+}
+
+.report-a-input {
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  background: #fef9f4 !important;
+  border-color: #f5d8bc !important;
+}
+
+.report-a-input::placeholder {
+  color: #c9a882;
+  font-style: italic;
+}
+
+.report-a-input:focus {
+  border-color: var(--orange) !important;
+}
+
+/* Submit */
+.report-submit-btn {
+  width: 100%;
+  padding: 15px 24px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: var(--orange);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(232,117,42,0.3);
+  transition: all 0.25s ease;
+  font-family: var(--font-body);
+  margin-top: 8px;
+}
+
+.report-submit-btn:hover {
+  background: var(--orange-hover);
+  transform: translateY(-1px);
+}
+
+.report-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

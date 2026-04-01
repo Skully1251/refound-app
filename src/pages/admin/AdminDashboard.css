@@ -1,0 +1,158 @@
+/* ===== Admin Dashboard ===== */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-stat {
+  background: var(--bg-white);
+  border-radius: 14px;
+  padding: 16px 10px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-stat-num {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.admin-stat-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Summary row */
+.admin-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.admin-summary-card {
+  border-radius: 12px;
+  padding: 14px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-summary-card span:first-child {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.admin-summary-card span:last-child {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-sum-open { background: #dbeafe; color: #1d4ed8; }
+.admin-sum-returned { background: #d1fae5; color: #047857; }
+.admin-sum-promo { background: #ede9fe; color: #7c3aed; }
+
+/* Section */
+.admin-section {
+  margin-bottom: 24px;
+}
+
+.admin-section-title {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.admin-empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-light);
+  font-size: 0.88rem;
+  background: var(--bg-white);
+  border-radius: 12px;
+}
+
+/* Promotion cards */
+.admin-promo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-promo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-white);
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.admin-promo-info h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.admin-promo-info span {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.admin-promo-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-promo-accept, .admin-promo-reject {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.admin-promo-accept {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.admin-promo-accept:hover {
+  background: #a7f3d0;
+}
+
+.admin-promo-reject {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.admin-promo-reject:hover {
+  background: #fecaca;
+}
+
+.admin-promo-accept:disabled, .admin-promo-reject:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,347 @@
+/* ===== Review Claims ===== */
+.rc-lock-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.rc-lock-error button {
+  background: none;
+  color: #dc2626;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.rc-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.rc-filter {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-white);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.rc-count {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.rc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 24px;
+}
+
+.rc-card {
+  background: var(--bg-white);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.rc-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.rc-card-item {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.rc-card-user {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.rc-card-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.rc-badge-pending { background: #fef3c7; color: #b45309; }
+.rc-badge-approved { background: #d1fae5; color: #047857; }
+.rc-badge-rejected { background: #fee2e2; color: #dc2626; }
+
+.rc-card-date {
+  font-size: 0.74rem;
+  color: var(--text-light);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.rc-review-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--orange);
+  color: #fff;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.rc-review-btn:hover {
+  background: var(--orange-hover);
+}
+
+/* ===== Review Modal ===== */
+.rc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.rc-modal {
+  background: var(--bg-white, #fff);
+  border-radius: 20px;
+  padding: 24px 20px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+}
+
+.rc-modal-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 16px;
+}
+
+.rc-modal-section {
+  margin-bottom: 16px;
+}
+
+.rc-modal-section h4 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.rc-modal-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ===== Answer Comparison ===== */
+.rc-compare-row {
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.rc-compare-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Match-based border colors */
+.rc-compare-exact {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.rc-compare-partial {
+  border-color: #fde68a;
+  background: #fefce8;
+}
+
+.rc-compare-none {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.rc-compare-q {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.rc-compare-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rc-compare-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rc-compare-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light);
+}
+
+.rc-compare-value {
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+.rc-compare-expected {
+  padding-top: 4px;
+  border-top: 1px dashed var(--border-light);
+}
+
+.rc-match-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.rc-match-exact {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.rc-match-partial {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.rc-match-none {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ===== Reject / Actions ===== */
+.rc-reject-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.rc-reject-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-light);
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  font-family: var(--font-body);
+  resize: vertical;
+}
+
+.rc-reject-input:focus {
+  border-color: var(--orange);
+  outline: none;
+}
+
+/* Action buttons */
+.rc-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rc-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.rc-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rc-btn-approve {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.rc-btn-approve:hover:not(:disabled) {
+  background: #a7f3d0;
+}
+
+.rc-btn-reject {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.rc-btn-reject:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.rc-btn-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.rc-btn-pending:hover:not(:disabled) {
+  background: #fde68a;
+}
+
+.rc-modal-close {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--bg-primary, #f5f6fa);
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.rc-modal-close:hover {
+  background: #e2e8f0;
+}

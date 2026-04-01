@@ -1,0 +1,305 @@
+.login-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 36px 40px;
+}
+
+/* ===== Header ===== */
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.login-logo-icon {
+  width: 76px;
+  height: 76px;
+  background: #fce8da;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  transition: transform 0.3s ease;
+}
+
+.login-logo-icon:hover {
+  transform: scale(1.05);
+}
+
+.login-brand {
+  font-family: var(--font-heading);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.3px;
+  margin-bottom: 2px;
+}
+
+.login-welcome {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+
+/* ===== Title ===== */
+.login-title {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 32px;
+}
+
+/* ===== Form ===== */
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ===== Auth Error ===== */
+.auth-error {
+  width: 100%;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* ===== Floating Label Input Group ===== */
+.input-group {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.input-group.floating-label {
+  position: relative;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 18px 14px 8px 14px;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  background: transparent;
+  border: 1.5px solid var(--border-light);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: transparent;
+}
+
+/* Floating label default state — sits inside the input */
+.float-label {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  color: var(--text-light);
+  font-weight: 400;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  padding: 0 4px;
+}
+
+/* Floating label active state — moves to top-left corner */
+.input-group.floating-label input:focus ~ .float-label,
+.input-group.floating-label.has-value .float-label,
+.password-wrapper input:focus ~ .float-label,
+.input-group.floating-label.has-value .password-wrapper .float-label {
+  top: 0;
+  left: 10px;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--orange);
+  background: #ffffff;
+  letter-spacing: 0.03em;
+}
+
+/* Light border glow on focus */
+.input-group input:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(232, 117, 42, 0.1);
+}
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  padding-right: 44px;
+}
+
+.eye-toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eye-toggle:hover svg {
+  stroke: var(--text-muted);
+}
+
+.forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.forgot-link {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--orange);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--orange-hover);
+}
+
+/* ===== Login Button ===== */
+.btn-login {
+  margin-top: 20px;
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 30px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: var(--orange);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(232, 117, 42, 0.35);
+  transition: all 0.25s ease;
+}
+
+.btn-login:hover {
+  background: var(--orange-hover);
+  box-shadow: 0 8px 28px rgba(232, 117, 42, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(232, 117, 42, 0.3);
+}
+
+.login-arrow {
+  font-size: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.btn-login:hover .login-arrow {
+  transform: translateX(3px);
+}
+
+/* ===== Divider ===== */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin: 22px 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-light);
+}
+
+.divider-text {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+/* ===== Google Button ===== */
+.btn-google {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: var(--bg-white);
+  color: var(--text-dark);
+  border: 1.5px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+}
+
+.btn-google:hover {
+  background: #f8f9fa;
+  border-color: #b0b8c4;
+  transform: translateY(-1px);
+}
+
+.btn-google:active {
+  transform: translateY(0);
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+/* ===== Sign Up Link ===== */
+.login-signup-text {
+  margin-top: 24px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.signup-link {
+  color: var(--orange);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.signup-link:hover {
+  color: var(--orange-hover);
+}

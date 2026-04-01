@@ -1,0 +1,493 @@
+/* ===== Settings Screen ===== */
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-section-title {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+/* ===== Settings Card ===== */
+.settings-card {
+  background: var(--bg-white);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.settings-card-flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.settings-description {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* ===== Avatar ===== */
+.settings-avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 8px;
+}
+
+.settings-role-indicator {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-primary, #f5f6fa);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+/* Save toast */
+.settings-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #047857;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  z-index: 5000;
+  animation: toastIn 0.3s ease;
+}
+
+.settings-toast.error {
+  background: #dc2626;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.settings-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), #f4a261);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.settings-avatar-edit {
+  position: absolute;
+  bottom: 0;
+  right: -4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(232, 117, 42, 0.35);
+  transition: all 0.2s ease;
+}
+
+.settings-avatar-edit:hover {
+  background: var(--orange-hover);
+  transform: scale(1.1);
+}
+
+/* ===== Input Fields ===== */
+.settings-field {
+  margin-bottom: 16px;
+}
+
+.settings-field:last-child {
+  margin-bottom: 0;
+}
+
+.settings-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-family: var(--font-body);
+}
+
+.settings-optional {
+  font-weight: 400;
+  color: var(--text-light);
+}
+
+.settings-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-light);
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  font-family: var(--font-body);
+}
+
+.settings-input:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(232, 117, 42, 0.1);
+}
+
+.settings-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-light);
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  font-family: var(--font-body);
+  resize: vertical;
+  min-height: 60px;
+}
+
+.settings-textarea::placeholder {
+  color: var(--text-light);
+}
+
+.settings-textarea:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(232, 117, 42, 0.1);
+}
+
+/* ===== Promotion Button ===== */
+.settings-promotion-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 24px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--orange), #f4a261);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(232, 117, 42, 0.3);
+  transition: all 0.25s ease;
+  font-family: var(--font-body);
+}
+
+.settings-promotion-btn:hover {
+  box-shadow: 0 6px 20px rgba(232, 117, 42, 0.4);
+  transform: translateY(-1px);
+}
+
+.settings-promotion-btn:active {
+  transform: translateY(0);
+}
+
+.settings-promotion-pending {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #b45309;
+}
+
+/* ===== Option Rows (Notifications / Preferences) ===== */
+.settings-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.settings-option-row:not(:last-child) {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.settings-option-row:hover {
+  background: var(--bg-primary);
+}
+
+.settings-option-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-dark);
+  font-size: 0.93rem;
+  font-weight: 500;
+}
+
+.settings-option-left svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ===== Toggle Switch ===== */
+.settings-toggle {
+  width: 44px;
+  height: 24px;
+  background: var(--border-light);
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+}
+
+.settings-toggle.on {
+  background: var(--orange);
+}
+
+.settings-toggle-knob {
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.settings-toggle.on .settings-toggle-knob {
+  transform: translateX(20px);
+}
+
+/* ===== Help & Support ===== */
+.settings-help-row {
+  display: flex;
+  gap: 12px;
+}
+
+.settings-help-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  background: var(--bg-primary);
+  color: var(--text-dark);
+  border: 1.5px solid var(--border-light);
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.settings-help-btn svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.settings-help-btn:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.settings-help-btn:hover svg {
+  color: var(--orange);
+}
+
+/* ===== Sign Out Button ===== */
+.settings-signout-btn {
+  width: 100%;
+  padding: 15px 24px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #fef2f2;
+  color: #e74c3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+  font-family: var(--font-body);
+}
+
+.settings-signout-btn:hover {
+  background: #fee2e2;
+  color: #c0392b;
+  transform: translateY(-1px);
+}
+
+.settings-signout-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== Save Changes Button ===== */
+.settings-save-btn {
+  width: 100%;
+  padding: 15px 24px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: var(--orange);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(232, 117, 42, 0.3);
+  transition: all 0.25s ease;
+  font-family: var(--font-body);
+  margin-top: 8px;
+}
+
+.settings-save-btn:hover {
+  background: var(--orange-hover);
+  box-shadow: 0 6px 22px rgba(232, 117, 42, 0.4);
+  transform: translateY(-1px);
+}
+
+.settings-save-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== Version ===== */
+.settings-version {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 24px;
+  padding-bottom: 16px;
+}
+
+/* ===== Promotion Modal ===== */
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  animation: modalFadeIn 0.25s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.settings-modal {
+  background: var(--bg-white);
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.settings-modal-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fce8da;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.settings-modal-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.settings-modal-text {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.settings-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.settings-modal-cancel {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--bg-primary);
+  color: var(--text-muted);
+  border: 1.5px solid var(--border-light);
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.settings-modal-cancel:hover {
+  background: var(--border-light);
+  color: var(--text-dark);
+}
+
+.settings-modal-confirm {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--orange);
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(232, 117, 42, 0.25);
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.settings-modal-confirm:hover {
+  background: var(--orange-hover);
+  box-shadow: 0 5px 16px rgba(232, 117, 42, 0.35);
+}
