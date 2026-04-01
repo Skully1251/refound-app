@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import refoundLogo from '../assets/ReFound logo.png'
 import './DashboardLayout.css'
 
 function DashboardLayout({ children, pageTitle }) {
@@ -155,11 +156,7 @@ function DashboardLayout({ children, pageTitle }) {
         {/* Brand */}
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">
-            <svg width="26" height="26" viewBox="0 0 60 60" fill="none">
-              <circle cx="26" cy="26" r="14" stroke="#e8752a" strokeWidth="3.5" fill="none" />
-              <line x1="36" y1="36" x2="48" y2="48" stroke="#e8752a" strokeWidth="3.5" strokeLinecap="round" />
-              <polyline points="19,27 24,32 34,20" fill="none" stroke="#e8752a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <img src={refoundLogo} alt="ReFound Logo" width="44" height="44" style={{ objectFit: 'contain' }} />
           </div>
           <span className="sidebar-brand-name">ReFound</span>
         </div>

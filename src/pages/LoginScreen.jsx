@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signInWithEmail, signInWithGoogle } from '../firebase/auth'
 import ForgotPasswordModal from '../components/ForgotPasswordModal'
+import refoundLogo from '../assets/ReFound logo.png'
 import './LoginScreen.css'
 
 function LoginScreen() {
@@ -61,11 +62,7 @@ function LoginScreen() {
         {/* Header */}
         <div className="login-header">
           <div className="login-logo-icon">
-            <svg width="44" height="44" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="26" cy="26" r="14" stroke="#e8752a" strokeWidth="3.5" fill="none" />
-              <line x1="36" y1="36" x2="48" y2="48" stroke="#e8752a" strokeWidth="3.5" strokeLinecap="round" />
-              <polyline points="19,27 24,32 34,20" fill="none" stroke="#e8752a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <img src={refoundLogo} alt="ReFound Logo" width="80" height="80" style={{ objectFit: 'contain' }} />
           </div>
           <h2 className="login-brand">ReFound</h2>
           <p className="login-welcome">Welcome back!</p>

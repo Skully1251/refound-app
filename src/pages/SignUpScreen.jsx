@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signUpWithEmail, signInWithGoogle } from '../firebase/auth'
+import refoundLogo from '../assets/ReFound logo.png'
 import './SignUpScreen.css'
 
 function SignUpScreen() {
@@ -73,11 +74,7 @@ function SignUpScreen() {
         {/* Header */}
         <div className="signup-header">
           <div className="signup-logo-icon">
-            <svg width="44" height="44" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="26" cy="26" r="14" stroke="#e8752a" strokeWidth="3.5" fill="none" />
-              <line x1="36" y1="36" x2="48" y2="48" stroke="#e8752a" strokeWidth="3.5" strokeLinecap="round" />
-              <polyline points="19,27 24,32 34,20" fill="none" stroke="#e8752a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <img src={refoundLogo} alt="ReFound Logo" width="80" height="80" style={{ objectFit: 'contain' }} />
           </div>
           <h1 className="signup-title">Create an Account</h1>
           <p className="signup-subtitle">Join the ReFound community today</p>
@@ -98,7 +95,7 @@ function SignUpScreen() {
               placeholder=" "
               required
             />
-            <label htmlFor="fullname-input" className="float-label">Full Name</label>
+            <label htmlFor="fullname-input" className="float-label">Name</label>
           </div>
 
           <div className={`input-group floating-label ${email ? 'has-value' : ''}`}>

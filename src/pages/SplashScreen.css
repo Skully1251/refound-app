@@ -28,10 +28,8 @@
 }
 
 .splash-logo-icon {
-  width: 100px;
-  height: 100px;
-  background: #fce8da;
-  border-radius: 22px;
+  width: 120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;

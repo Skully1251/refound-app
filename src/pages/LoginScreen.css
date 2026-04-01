@@ -27,10 +27,8 @@
 }
 
 .login-logo-icon {
-  width: 76px;
-  height: 76px;
-  background: #fce8da;
-  border-radius: 50%;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
