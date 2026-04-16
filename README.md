@@ -1,6 +1,14 @@
 # ReFound — Bringing Things Back
 
-A modern **Lost & Found** progressive web app built for campus communities. Students can report lost items, employees can manage inventory, and administrators can oversee the entire workflow — all from a single, mobile-first interface with push notifications.
+A modern **Lost & Found** progressive web app built for campus communities. Students can report lost items, employees can manage inventory, and administrators can oversee the entire workflow - all from a single, mobile-first interface with push notifications.
+
+---
+
+## Live Demo
+
+🚀 **Fully deployed at:**
+- [https://refound-3b932.web.app/](https://refound-3b932.web.app/)
+- [https://refound-3b932.firebaseapp.com/](https://refound-3b932.firebaseapp.com/)
 
 ---
 
