@@ -6,6 +6,32 @@ import { ToastProvider } from './components/Toast'
 import App from './App'
 import './index.css'
 
+// ── PWA Service Worker Registration ──
+import { registerSW } from 'virtual:pwa-register'
+
+const updateSW = registerSW({
+  onNeedRefresh() {
+    // A new version of the app is available
+    if (confirm('A new version of ReFound is available. Update now?')) {
+      updateSW(true)
+    }
+  },
+  onOfflineReady() {
+    console.log('ReFound is ready to work offline!')
+  },
+  onRegisteredSW(swUrl, registration) {
+    // Check for updates every hour
+    if (registration) {
+      setInterval(() => {
+        registration.update()
+      }, 60 * 60 * 1000)
+    }
+  },
+  onRegisterError(error) {
+    console.error('SW registration failed:', error)
+  }
+})
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>

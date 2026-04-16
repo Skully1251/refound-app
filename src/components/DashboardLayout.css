@@ -4,7 +4,7 @@
   max-width: 480px;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
   background: var(--bg-primary);
 }
 
@@ -159,6 +159,10 @@
   align-items: center;
   gap: 12px;
   padding: 16px 20px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-primary);
 }
 
 .topbar-menu-btn {

@@ -217,14 +217,18 @@ export async function rejectOtherPendingClaims(itemId, approvedClaimId) {
   await Promise.all(promises)
 }
 
-export async function hasUserExistingClaim(uid, itemId) {
+/**
+ * Check if user has an existing claim for an item.
+ * Returns the list of existing claims (may be empty).
+ */
+export async function getUserClaimsForItem(uid, itemId) {
   const q = query(
     collection(db, 'claims'),
     where('userId', '==', uid),
     where('itemId', '==', itemId)
   )
   const snap = await getDocs(q)
-  return !snap.empty
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
 // ════════════════════════════════════════
@@ -237,6 +241,32 @@ export async function createNotification(data) {
     isRead: false,
     createdAt: serverTimestamp()
   })
+}
+
+/**
+ * Get all users with role 'user' (students).
+ */
+export async function getAllStudentUsers() {
+  const q = query(collection(db, 'users'), where('role', '==', 'user'))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+/**
+ * Send a notification to every student.
+ */
+export async function notifyAllStudents(message, type = 'new_item') {
+  const students = await getAllStudentUsers()
+  const promises = students.map(student =>
+    addDoc(collection(db, 'notifications'), {
+      userId: student.id,
+      message,
+      type,
+      isRead: false,
+      createdAt: serverTimestamp()
+    })
+  )
+  await Promise.all(promises)
 }
 
 export function subscribeToUserNotifications(uid, callback) {

@@ -27,6 +27,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .rc-filter {
@@ -272,7 +274,8 @@
   border-radius: 10px;
   border: 1.5px solid var(--border-light);
   font-size: 0.85rem;
-  color: var(--text-dark);
+  color: #1e293b;
+  background: #fff;
   font-family: var(--font-body);
   resize: vertical;
 }

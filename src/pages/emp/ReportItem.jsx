@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { createItem, createAuditLog, createNotification } from '../../firebase/firestore'
+import { createItem, createAuditLog, createNotification, notifyAllStudents } from '../../firebase/firestore'
 import { uploadImageToCloudinary } from '../../firebase/cloudinary'
 import { useToast } from '../../components/Toast'
 import DashboardLayout from '../../components/DashboardLayout'
@@ -42,14 +42,34 @@ function ReportItem() {
     { question: '', expectedAnswer: '' },
     { question: '', expectedAnswer: '' },
   ])
-  const [usePreset, setUsePreset] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [uploadProgress, setUploadProgress] = useState('')
 
+  // Compute max datetime: now + 5 minutes
+  const maxDateTime = useMemo(() => {
+    const now = new Date()
+    now.setMinutes(now.getMinutes() + 5)
+    const pad = (n) => String(n).padStart(2, '0')
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
+  }, [])
+
+  const handleDateTimeChange = (val) => {
+    if (val) {
+      const selected = new Date(val)
+      const now = new Date()
+      now.setMinutes(now.getMinutes() + 5)
+      if (selected > now) {
+        toast.showWarning('Cannot select a time more than 5 minutes ahead of now.')
+        return
+      }
+    }
+    setDateTime(val)
+  }
+
   const handleCategoryChange = (cat) => {
     setCategory(cat)
-    if (usePreset && QUESTION_PRESETS[cat]) {
+    if (QUESTION_PRESETS[cat]) {
       setQuestions(QUESTION_PRESETS[cat].map(q => ({ question: q, expectedAnswer: '' })))
     }
   }
@@ -139,6 +159,12 @@ function ReportItem() {
         type: 'new_item',
       })
 
+      // Notify all students about the new found item (non-blocking)
+      notifyAllStudents(
+        `New found item: "${title}" (${category}) at ${location}. Check the dashboard to claim it!`,
+        'new_item'
+      ).catch(err => console.warn('Failed to notify students:', err))
+
       toast.showSuccess('Item reported successfully!')
       navigate('/emp/dashboard')
     } catch (err) {
@@ -202,7 +228,7 @@ function ReportItem() {
 
         <div className="report-field">
           <label className="report-label">Date & Time Found</label>
-          <input className="report-input" type="datetime-local" value={dateTime} onChange={(e) => setDateTime(e.target.value)} />
+          <input className="report-input" type="datetime-local" value={dateTime} max={maxDateTime} onChange={(e) => handleDateTimeChange(e.target.value)} />
         </div>
 
         <div className="report-field">
@@ -214,16 +240,12 @@ function ReportItem() {
         <div className="report-questions-section">
           <div className="report-questions-header">
             <label className="report-label">Verification Questions (5)</label>
-            <button type="button" className="report-preset-toggle" onClick={() => {
-              setUsePreset(!usePreset)
-              if (!usePreset && category && QUESTION_PRESETS[category]) {
-                setQuestions(QUESTION_PRESETS[category].map(q => ({ question: q, expectedAnswer: '' })))
-              }
-            }}>
-              {usePreset ? '✏️ Custom' : '📋 Preset'}
-            </button>
           </div>
-          <p className="report-questions-hint">Write each question and the expected answer. Students will need to answer these to claim the item.</p>
+          <p className="report-questions-hint">
+            {category
+              ? 'Write each question and the expected answer. Students will need to answer these to claim the item.'
+              : '⚠️ Please select a category first to load verification questions.'}
+          </p>
           {questions.map((q, i) => (
             <div key={i} className="report-qa-row">
               <div className="report-qa-number">{i + 1}</div>
@@ -231,16 +253,18 @@ function ReportItem() {
                 <input
                   className="report-input report-q-input"
                   type="text"
-                  placeholder={`Question ${i + 1}`}
+                  placeholder={category ? `Question ${i + 1}` : 'Select a category first'}
                   value={q.question}
                   onChange={(e) => handleQuestionChange(i, 'question', e.target.value)}
+                  disabled={!category}
                 />
                 <input
                   className="report-input report-a-input"
                   type="text"
-                  placeholder={`Expected answer...`}
+                  placeholder={category ? 'Expected answer...' : ''}
                   value={q.expectedAnswer}
                   onChange={(e) => handleQuestionChange(i, 'expectedAnswer', e.target.value)}
+                  disabled={!category}
                 />
               </div>
             </div>

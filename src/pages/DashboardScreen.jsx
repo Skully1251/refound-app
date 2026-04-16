@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { subscribeToItems, createClaim, hasUserExistingClaim, createNotification } from '../firebase/firestore'
+import { subscribeToItems, createClaim, getUserClaimsForItem, createNotification } from '../firebase/firestore'
 import { uploadImageToCloudinary } from '../firebase/cloudinary'
 import { useToast } from '../components/Toast'
 import DashboardLayout from '../components/DashboardLayout'
@@ -107,10 +107,30 @@ function DashboardScreen() {
   }
 
   const handleClaimClick = async (item) => {
-    const hasExisting = await hasUserExistingClaim(currentUser.uid, item.id)
-    if (hasExisting) {
-      toast.showWarning('You have already submitted a claim for this item.')
-      return
+    const existingClaims = await getUserClaimsForItem(currentUser.uid, item.id)
+    
+    if (existingClaims.length > 0) {
+      // Check if any claim is pending or approved
+      const pendingOrApproved = existingClaims.find(c => c.status === 'pending' || c.status === 'approved')
+      if (pendingOrApproved) {
+        toast.showWarning('You have already submitted a claim for this item.')
+        return
+      }
+      
+      // Check if the most recent rejected claim is within the 1-day cooldown
+      const rejectedClaims = existingClaims.filter(c => c.status === 'rejected')
+      if (rejectedClaims.length > 0) {
+        const latestRejected = rejectedClaims[0] // already sorted by createdAt desc
+        const decisionTime = latestRejected.decisionAt?.toDate?.() || latestRejected.decisionAt
+        if (decisionTime) {
+          const cooldownEnd = new Date(decisionTime.getTime() + 24 * 60 * 60 * 1000)
+          if (new Date() < cooldownEnd) {
+            const hoursLeft = Math.ceil((cooldownEnd - new Date()) / (1000 * 60 * 60))
+            toast.showWarning(`Your previous claim was rejected. You can re-claim in ${hoursLeft} hour(s).`)
+            return
+          }
+        }
+      }
     }
     setClaimModal(item)
     setClaimAnswers({})

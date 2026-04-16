@@ -65,10 +65,12 @@
   display: flex;
   gap: 10px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .emp-search {
   flex: 1;
+  min-width: 0;
   padding: 10px 14px;
   border-radius: 10px;
   border: 1.5px solid var(--border-light);
@@ -94,6 +96,8 @@
   color: var(--text-muted);
   font-family: var(--font-body);
   cursor: pointer;
+  flex-shrink: 0;
+  max-width: 140px;
 }
 
 /* Items list */

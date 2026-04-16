@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import { signInWithEmail, signInWithGoogle } from '../firebase/auth'
 import ForgotPasswordModal from '../components/ForgotPasswordModal'
 import refoundLogo from '../assets/ReFound logo.png'
@@ -7,12 +8,23 @@ import './LoginScreen.css'
 
 function LoginScreen() {
   const navigate = useNavigate()
+  const { currentUser, userProfile, loading: authLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showForgotModal, setShowForgotModal] = useState(false)
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (authLoading) return
+    if (currentUser && userProfile) {
+      if (userProfile.role === 'admin') navigate('/admin/dashboard', { replace: true })
+      else if (userProfile.role === 'employee') navigate('/emp/dashboard', { replace: true })
+      else navigate('/dashboard', { replace: true })
+    }
+  }, [currentUser, userProfile, authLoading, navigate])
 
   const navigateByRole = (role) => {
     if (role === 'admin') navigate('/admin/dashboard')

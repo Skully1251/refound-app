@@ -139,9 +139,9 @@ function DashboardLayout({ children, pageTitle }) {
   const isActive = (path) => location.pathname === path
 
   // Role badge
-  const roleBadge = userProfile?.role === 'admin' ? '🛡️ Admin'
-    : userProfile?.role === 'employee' ? '⚙️ Employee'
-    : '👤 Student'
+  const roleBadge = userProfile?.role === 'admin' ? 'Admin'
+    : userProfile?.role === 'employee' ? 'Employee'
+    : 'Student'
 
   return (
     <div className="dashboard-layout">

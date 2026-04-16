@@ -12,11 +12,11 @@ import { auth, db } from './config'
 
 const googleProvider = new GoogleAuthProvider()
 
-// Pre-loaded admin emails (lowercase for comparison)
-const ADMIN_EMAILS = [
-  '2006negiom1505@gmail.com',
-  'helpdesk@bennett.in'
-]
+// Admin emails loaded from environment (comma-separated in .env)
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean)
 
 /**
  * Determine role based on email
@@ -85,6 +85,7 @@ export async function signInWithGoogle() {
  * Sign out
  */
 export async function logOut() {
+  localStorage.removeItem('refound_last_activity')
   await signOut(auth)
 }
 

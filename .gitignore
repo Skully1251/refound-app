@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# PWA dev artifacts
+dev-dist
+
+# Firebase
+.firebase/
+
 # Env files
 .env
 .env.*

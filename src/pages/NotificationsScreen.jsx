@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { subscribeToUserNotifications, markNotificationRead, markAllNotificationsRead } from '../firebase/firestore'
+import { requestNotificationPermission, onForegroundMessage, getNotificationPermissionState } from '../firebase/messaging'
 import DashboardLayout from '../components/DashboardLayout'
+import { useToast } from '../components/Toast'
 import './NotificationsScreen.css'
 
 const typeConfig = {
@@ -14,8 +16,11 @@ const typeConfig = {
 
 function NotificationsScreen() {
   const { currentUser } = useAuth()
+  const { showToast } = useToast()
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
+  const [pushPermission, setPushPermission] = useState('default')
+  const [requestingPush, setRequestingPush] = useState(false)
 
   useEffect(() => {
     if (!currentUser) return
@@ -25,6 +30,43 @@ function NotificationsScreen() {
     })
     return unsub
   }, [currentUser])
+
+  // Check push notification permission state
+  useEffect(() => {
+    setPushPermission(getNotificationPermissionState())
+  }, [])
+
+  // Listen for foreground push messages → show toast
+  useEffect(() => {
+    if (pushPermission !== 'granted') return
+    const unsub = onForegroundMessage((payload) => {
+      const { title, body } = payload.notification || {}
+      showToast(body || title || 'New notification', 'info')
+    })
+    return unsub
+  }, [pushPermission, showToast])
+
+  const handleEnablePush = useCallback(async () => {
+    if (!currentUser) return
+    setRequestingPush(true)
+    try {
+      const token = await requestNotificationPermission(currentUser.uid)
+      if (token) {
+        setPushPermission('granted')
+        showToast('Push notifications enabled!', 'success')
+      } else {
+        setPushPermission(getNotificationPermissionState())
+        if (Notification.permission === 'denied') {
+          showToast('Notifications blocked. Enable them in your browser settings.', 'error')
+        }
+      }
+    } catch (err) {
+      console.error('Push permission error:', err)
+      showToast('Failed to enable notifications', 'error')
+    } finally {
+      setRequestingPush(false)
+    }
+  }, [currentUser, showToast])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 
@@ -53,6 +95,39 @@ function NotificationsScreen() {
 
   return (
     <DashboardLayout pageTitle="Notifications">
+      {/* Push notification banner */}
+      {pushPermission === 'default' && (
+        <div className="push-banner" id="push-notification-banner">
+          <div className="push-banner-content">
+            <div className="push-banner-icon">🔔</div>
+            <div className="push-banner-text">
+              <h4>Enable Push Notifications</h4>
+              <p>Get instant alerts when someone finds your lost item or your claim gets updated.</p>
+            </div>
+          </div>
+          <button
+            id="enable-push-btn"
+            className="push-banner-btn"
+            onClick={handleEnablePush}
+            disabled={requestingPush}
+          >
+            {requestingPush ? 'Enabling...' : 'Enable'}
+          </button>
+        </div>
+      )}
+
+      {pushPermission === 'denied' && (
+        <div className="push-banner push-banner-denied" id="push-denied-banner">
+          <div className="push-banner-content">
+            <div className="push-banner-icon">🚫</div>
+            <div className="push-banner-text">
+              <h4>Notifications Blocked</h4>
+              <p>You've blocked notifications. To enable them, go to your browser settings → Site Settings → Notifications.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header bar */}
       <div className="notif-header">
         <span className="notif-count">

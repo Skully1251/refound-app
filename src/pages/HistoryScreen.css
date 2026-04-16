@@ -115,3 +115,11 @@
   color: var(--text-light);
   flex-shrink: 0;
 }
+
+.history-card-reason {
+  font-size: 0.76rem;
+  color: #b91c1c;
+  font-style: italic;
+  margin-top: 2px;
+  line-height: 1.3;
+}

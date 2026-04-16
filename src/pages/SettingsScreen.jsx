@@ -121,7 +121,7 @@ function SettingsScreen() {
               <span>{(displayName || 'U').charAt(0).toUpperCase()}</span>
             </div>
             <span className="settings-role-indicator">
-              {userProfile?.role === 'admin' ? '🛡️ Admin' : userProfile?.role === 'employee' ? '⚙️ Employee' : '👤 Student'}
+              {userProfile?.role === 'admin' ? 'Admin' : userProfile?.role === 'employee' ? 'Employee' : 'Student'}
             </span>
           </div>
 
