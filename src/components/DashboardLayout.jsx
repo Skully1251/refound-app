@@ -1,14 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { subscribeToUserNotifications } from '../firebase/firestore'
 import refoundLogo from '../assets/ReFound logo.png'
 import './DashboardLayout.css'
 
 function DashboardLayout({ children, pageTitle }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { userProfile, isAdmin, isEmployee } = useAuth()
+  const { currentUser, userProfile, isAdmin, isEmployee } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Subscribe to unread notifications count
+  useEffect(() => {
+    if (!currentUser) return
+    const unsub = subscribeToUserNotifications(currentUser.uid, (notifications) => {
+      setUnreadCount(notifications.filter(n => !n.isRead).length)
+    })
+    return unsub
+  }, [currentUser])
 
   // ── Role-based nav items ──
   const userNav = [
@@ -198,6 +209,9 @@ function DashboardLayout({ children, pageTitle }) {
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             Notifications
+            {unreadCount > 0 && (
+              <span className="sidebar-notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+            )}
           </button>
 
           <button

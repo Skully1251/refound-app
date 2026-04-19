@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { subscribeToUserNotifications, markNotificationRead, markAllNotificationsRead } from '../firebase/firestore'
-import { requestNotificationPermission, onForegroundMessage, getNotificationPermissionState } from '../firebase/messaging'
+import { getNotificationPermissionState } from '../firebase/messaging'
+import { promptForPush, getOneSignalPermission } from '../firebase/onesignal'
 import DashboardLayout from '../components/DashboardLayout'
 import { useToast } from '../components/Toast'
 import './NotificationsScreen.css'
@@ -19,7 +20,7 @@ function NotificationsScreen() {
   const { showToast } = useToast()
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
-  const [pushPermission, setPushPermission] = useState('default')
+  const [pushPermission, setPushPermission] = useState('checking') // start as 'checking' to avoid flash
   const [requestingPush, setRequestingPush] = useState(false)
 
   useEffect(() => {
@@ -33,31 +34,40 @@ function NotificationsScreen() {
 
   // Check push notification permission state
   useEffect(() => {
-    setPushPermission(getNotificationPermissionState())
+    // First check the browser's native permission
+    const browserPerm = getNotificationPermissionState()
+
+    if (browserPerm === 'denied') {
+      setPushPermission('denied')
+      return
+    }
+
+    if (browserPerm === 'granted') {
+      // Browser says granted — verify with OneSignal too
+      const osGranted = getOneSignalPermission()
+      setPushPermission(osGranted ? 'granted' : 'default')
+    } else {
+      // Browser permission is 'default' — show the enable banner
+      setPushPermission('default')
+    }
   }, [])
 
-  // Listen for foreground push messages → show toast
-  useEffect(() => {
-    if (pushPermission !== 'granted') return
-    const unsub = onForegroundMessage((payload) => {
-      const { title, body } = payload.notification || {}
-      showToast(body || title || 'New notification', 'info')
-    })
-    return unsub
-  }, [pushPermission, showToast])
-
   const handleEnablePush = useCallback(async () => {
-    if (!currentUser) return
     setRequestingPush(true)
     try {
-      const token = await requestNotificationPermission(currentUser.uid)
-      if (token) {
+      console.log('Requesting push permission via OneSignal...')
+      const granted = await promptForPush()
+      console.log('Push permission result:', granted)
+      if (granted) {
         setPushPermission('granted')
         showToast('Push notifications enabled!', 'success')
       } else {
-        setPushPermission(getNotificationPermissionState())
-        if (Notification.permission === 'denied') {
+        const currentPerm = getNotificationPermissionState()
+        setPushPermission(currentPerm)
+        if (currentPerm === 'denied') {
           showToast('Notifications blocked. Enable them in your browser settings.', 'error')
+        } else {
+          showToast('Push notifications were not enabled. Please try again.', 'warning')
         }
       }
     } catch (err) {
@@ -66,7 +76,7 @@ function NotificationsScreen() {
     } finally {
       setRequestingPush(false)
     }
-  }, [currentUser, showToast])
+  }, [showToast])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 

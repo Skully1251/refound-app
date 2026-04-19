@@ -34,6 +34,22 @@
     ],
     "rewrites": [
       {
+        "source": "/sw.js",
+        "destination": "/sw.js"
+      },
+      {
+        "source": "/OneSignalSDKWorker.js",
+        "destination": "/OneSignalSDKWorker.js"
+      },
+      {
+        "source": "/OneSignalSDKUpdaterWorker.js",
+        "destination": "/OneSignalSDKUpdaterWorker.js"
+      },
+      {
+        "source": "/workbox-*.js",
+        "destination": "/workbox-*.js"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

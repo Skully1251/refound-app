@@ -10,21 +10,21 @@ import './index.css'
 import { registerSW } from 'virtual:pwa-register'
 
 const updateSW = registerSW({
+  // When a new SW is ready, just apply it immediately without prompting.
+  // Using confirm() causes reload loops on some mobile browsers.
   onNeedRefresh() {
-    // A new version of the app is available
-    if (confirm('A new version of ReFound is available. Update now?')) {
-      updateSW(true)
-    }
+    console.log('New version available — auto-updating...')
+    updateSW(true)
   },
   onOfflineReady() {
     console.log('ReFound is ready to work offline!')
   },
   onRegisteredSW(swUrl, registration) {
-    // Check for updates every hour
+    // Check for updates every 4 hours (not every hour — too frequent causes loops on mobile)
     if (registration) {
       setInterval(() => {
         registration.update()
-      }, 60 * 60 * 1000)
+      }, 4 * 60 * 60 * 1000)
     }
   },
   onRegisterError(error) {

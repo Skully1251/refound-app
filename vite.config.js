@@ -1,71 +1,9 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import fs from 'fs'
-import path from 'path'
-
-/**
- * Custom Vite plugin: injects Firebase env vars into the service worker.
- *
- * Service workers in /public can't use import.meta.env (they run outside Vite's
- * module pipeline). This plugin replaces __FIREBASE_*__ placeholders with actual
- * values from .env at both dev-serve and production-build time.
- */
-function firebaseSWEnvPlugin() {
-  let env = {}
-
-  function injectEnv(content) {
-    return content
-      .replace('__FIREBASE_API_KEY__', env.VITE_FIREBASE_API_KEY || '')
-      .replace('__FIREBASE_AUTH_DOMAIN__', env.VITE_FIREBASE_AUTH_DOMAIN || '')
-      .replace('__FIREBASE_PROJECT_ID__', env.VITE_FIREBASE_PROJECT_ID || '')
-      .replace('__FIREBASE_STORAGE_BUCKET__', env.VITE_FIREBASE_STORAGE_BUCKET || '')
-      .replace('__FIREBASE_MESSAGING_SENDER_ID__', env.VITE_FIREBASE_MESSAGING_SENDER_ID || '')
-      .replace('__FIREBASE_APP_ID__', env.VITE_FIREBASE_APP_ID || '')
-  }
-
-  return {
-    name: 'firebase-sw-env',
-
-    // Capture env vars from .env files
-    config(_, { mode }) {
-      env = loadEnv(mode, process.cwd(), 'VITE_')
-    },
-
-    // Dev: intercept the SW request and serve with env vars injected
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        if (req.url === '/firebase-messaging-sw.js') {
-          const filePath = path.resolve('public/firebase-messaging-sw.js')
-          let content = fs.readFileSync(filePath, 'utf-8')
-          content = injectEnv(content)
-          res.setHeader('Content-Type', 'application/javascript')
-          res.end(content)
-          return
-        }
-        next()
-      })
-    },
-
-    // Build: replace placeholders in the copied output file
-    writeBundle: {
-      sequential: true,
-      handler(options) {
-        const outDir = options.dir
-        const swPath = path.resolve(outDir, 'firebase-messaging-sw.js')
-        if (fs.existsSync(swPath)) {
-          let content = fs.readFileSync(swPath, 'utf-8')
-          content = injectEnv(content)
-          fs.writeFileSync(swPath, content)
-        }
-      }
-    }
-  }
-}
 
 export default defineConfig({
   plugins: [
-    firebaseSWEnvPlugin(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -131,8 +69,12 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Pre-cache app shell
+        // Import OneSignal's service worker into VitePWA's service worker
+        // This avoids a conflict where both try to register at scope '/'
+        importScripts: ['https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js'],
+        // Pre-cache app shell (exclude OneSignal's standalone worker files)
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        navigateFallbackDenylist: [/^\/OneSignalSDK/],
         // Runtime caching strategies
         runtimeCaching: [
           {

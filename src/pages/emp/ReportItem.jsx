@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { createItem, createAuditLog, createNotification, notifyAllStudents } from '../../firebase/firestore'
 import { uploadImageToCloudinary } from '../../firebase/cloudinary'
+import { sendPushToStudents } from '../../firebase/onesignal'
 import { useToast } from '../../components/Toast'
 import DashboardLayout from '../../components/DashboardLayout'
 import './ReportItem.css'
@@ -159,11 +160,24 @@ function ReportItem() {
         type: 'new_item',
       })
 
-      // Notify all students about the new found item (non-blocking)
-      notifyAllStudents(
-        `New found item: "${title}" (${category}) at ${location}. Check the dashboard to claim it!`,
-        'new_item'
-      ).catch(err => console.warn('Failed to notify students:', err))
+      // Notify all students about the new found item (in-app Firestore notifications)
+      try {
+        await notifyAllStudents(
+          `New found item: "${title}" (${category}) at ${location}. Check the dashboard to claim it!`,
+          'new_item'
+        )
+        console.log('In-app notifications sent to all students')
+      } catch (err) {
+        console.error('Failed to send in-app notifications:', err)
+        toast.showWarning('Item reported but some students may not have been notified.')
+      }
+
+      // Send push notification via OneSignal (non-blocking)
+      sendPushToStudents(
+        'New Found Item!',
+        `"${title}" (${category}) found at ${location}. Claim it now!`,
+        '/dashboard'
+      ).catch(err => console.warn('Push notification failed:', err))
 
       toast.showSuccess('Item reported successfully!')
       navigate('/emp/dashboard')

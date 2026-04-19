@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { auth } from '../firebase/config'
 import { subscribeToUserProfile } from '../firebase/firestore'
+import { initOneSignal, loginOneSignal, logoutOneSignal, tagUserRole } from '../firebase/onesignal'
 
 const AuthContext = createContext(null)
 
@@ -23,6 +24,11 @@ export function AuthProvider({ children }) {
   // Update last activity timestamp
   const updateLastActivity = useCallback(() => {
     localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString())
+  }, [])
+
+  // Initialize OneSignal once on mount
+  useEffect(() => {
+    initOneSignal()
   }, [])
 
   useEffect(() => {
@@ -53,15 +59,24 @@ export function AuthProvider({ children }) {
         setCurrentUser(user)
         updateLastActivity()
 
+        // Login to OneSignal with Firebase UID
+        loginOneSignal(user.uid)
+
         // Subscribe to user profile in real-time
         unsubProfileRef.current = subscribeToUserProfile(user.uid, (profile) => {
           setUserProfile(profile)
           setLoading(false)
+
+          // Tag user with their role for targeted push notifications
+          if (profile?.role) {
+            tagUserRole(profile.role)
+          }
         })
       } else {
         setCurrentUser(null)
         setUserProfile(null)
         setLoading(false)
+        logoutOneSignal()
       }
     })
 
@@ -98,3 +113,4 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   )
 }
+
