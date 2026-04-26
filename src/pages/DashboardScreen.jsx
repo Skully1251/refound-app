@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { subscribeToItems, createClaim, getUserClaimsForItem, createNotification } from '../firebase/firestore'
+import { subscribeToItems, createClaim, getUserClaimsForItem, notifyAllEmployees } from '../firebase/firestore'
+import { sendPushToEmployees } from '../firebase/onesignal'
 import { uploadImageToCloudinary } from '../firebase/cloudinary'
 import { useToast } from '../components/Toast'
 import DashboardLayout from '../components/DashboardLayout'
@@ -193,12 +194,20 @@ function DashboardScreen() {
           answer: claimAnswers[i] || ''
         }))
       })
-      // Notify the user
-      await createNotification({
-        userId: currentUser.uid,
-        message: `Your claim for "${claimModal.title}" has been submitted and is pending review.`,
-        type: 'claim_update'
-      })
+
+      // Notify all employees about the new claim (in-app + push)
+      const studentName = currentUser.displayName || 'A student'
+      notifyAllEmployees(
+        `${studentName} submitted a claim for "${claimModal.title}". Review it now!`,
+        'new_claim'
+      ).catch(err => console.warn('Employee in-app notification failed:', err))
+
+      sendPushToEmployees(
+        'New Claim Submitted',
+        `${studentName} claimed "${claimModal.title}". Tap to review.`,
+        '/emp/review-claims'
+      ).catch(err => console.warn('Employee push notification failed:', err))
+
       setClaimModal(null)
       toast.showSuccess('Claim submitted successfully! You will be notified once it is reviewed.')
     } catch (err) {

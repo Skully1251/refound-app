@@ -9,18 +9,17 @@ import './index.css'
 // ── PWA Service Worker Registration ──
 import { registerSW } from 'virtual:pwa-register'
 
-const updateSW = registerSW({
-  // When a new SW is ready, just apply it immediately without prompting.
-  // Using confirm() causes reload loops on some mobile browsers.
+registerSW({
+  // With registerType: 'prompt', the new SW installs and waits silently.
+  // We intentionally do NOT reload the page — updates apply on next visit.
   onNeedRefresh() {
-    console.log('New version available — auto-updating...')
-    updateSW(true)
+    console.log('New app version available — will apply on next visit.')
   },
   onOfflineReady() {
     console.log('ReFound is ready to work offline!')
   },
   onRegisteredSW(swUrl, registration) {
-    // Check for updates every 4 hours (not every hour — too frequent causes loops on mobile)
+    // Check for updates every 4 hours
     if (registration) {
       setInterval(() => {
         registration.update()
@@ -36,7 +35,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <ToastProvider>
+        <ToastProvider> 
           <App />
         </ToastProvider>
       </AuthProvider>

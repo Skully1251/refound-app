@@ -269,6 +269,58 @@ export async function notifyAllStudents(message, type = 'new_item') {
   await Promise.all(promises)
 }
 
+/**
+ * Get all users with role 'employee'.
+ */
+export async function getAllEmployeeUsers() {
+  const q = query(collection(db, 'users'), where('role', '==', 'employee'))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+/**
+ * Send a notification to every employee.
+ */
+export async function notifyAllEmployees(message, type = 'new_claim') {
+  const employees = await getAllEmployeeUsers()
+  const promises = employees.map(emp =>
+    addDoc(collection(db, 'notifications'), {
+      userId: emp.id,
+      message,
+      type,
+      isRead: false,
+      createdAt: serverTimestamp()
+    })
+  )
+  await Promise.all(promises)
+}
+
+/**
+ * Get all users with role 'admin'.
+ */
+export async function getAllAdminUsers() {
+  const q = query(collection(db, 'users'), where('role', '==', 'admin'))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+/**
+ * Send a notification to every admin.
+ */
+export async function notifyAllAdmins(message, type = 'system') {
+  const admins = await getAllAdminUsers()
+  const promises = admins.map(admin =>
+    addDoc(collection(db, 'notifications'), {
+      userId: admin.id,
+      message,
+      type,
+      isRead: false,
+      createdAt: serverTimestamp()
+    })
+  )
+  await Promise.all(promises)
+}
+
 export function subscribeToUserNotifications(uid, callback) {
   const q = query(
     collection(db, 'notifications'),

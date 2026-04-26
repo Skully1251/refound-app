@@ -1,50 +1,90 @@
 /**
  * OneSignal Push Notification Utilities
  *
- * Handles initialization, user identification, and sending push notifications
- * via the OneSignal REST API (client-side, acceptable for college projects).
+ * Uses the OneSignal Web SDK v16 loaded directly via <script> tag in index.html.
+ * The react-onesignal npm wrapper had a bug where requestPermission() threw
+ * "TypeError: t is not a function", so we bypass it entirely.
  *
- * Uses the react-onesignal npm package instead of the CDN approach for
- * more reliable initialization in React/Vite apps.
+ * Also handles sending push notifications via the OneSignal REST API
+ * (client-side, acceptable for college projects).
  */
-
-import OneSignal from 'react-onesignal'
 
 const APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID
 const REST_API_KEY = import.meta.env.VITE_ONESIGNAL_REST_API_KEY
 
 let initialized = false
-let initFailed = false
+let initPromise = null
 
 /**
- * Initialize OneSignal SDK via the npm package.
- * Should be called once when the app mounts.
+ * Get a reference to the global OneSignal object.
+ * Returns null if the SDK hasn't loaded yet.
+ */
+function getOS() {
+  return typeof window !== 'undefined' ? window.OneSignal : null
+}
+
+/**
+ * Wait for the OneSignal SDK script to load (it's loaded with defer).
+ * Polls every 100ms for up to 10 seconds.
+ */
+function waitForSDK() {
+  return new Promise((resolve) => {
+    // Already available
+    if (window.OneSignal) {
+      resolve(window.OneSignal)
+      return
+    }
+
+    let attempts = 0
+    const interval = setInterval(() => {
+      attempts++
+      if (window.OneSignal) {
+        clearInterval(interval)
+        resolve(window.OneSignal)
+      } else if (attempts > 100) {
+        // 10 seconds timeout
+        clearInterval(interval)
+        resolve(null)
+      }
+    }, 100)
+  })
+}
+
+/**
+ * Initialize OneSignal SDK.
+ * Waits for the SDK script to load, then calls init() directly.
+ * Safe to call multiple times — only initializes once.
  */
 export async function initOneSignal() {
-  if (initialized || initFailed || !APP_ID) return
-  if (typeof window === 'undefined') return
+  if (initialized) return
+  if (initPromise) return initPromise
+  if (!APP_ID || typeof window === 'undefined') return
 
-  try {
-    await OneSignal.init({
-      appId: APP_ID,
-      allowLocalhostAsSecureOrigin: true,
-      serviceWorkerParam: { scope: '/' },
-      serviceWorkerPath: '/sw.js',
-      notifyButton: {
-        enable: false,
-      },
-      promptOptions: {
-        slidedown: {
-          prompts: [],
-        },
-      },
-    })
-    initialized = true
-    console.log('OneSignal SDK initialized successfully')
-  } catch (error) {
-    initFailed = true
-    console.warn('OneSignal init failed:', error.message || error)
-  }
+  initPromise = (async () => {
+    try {
+      const OS = await waitForSDK()
+      if (!OS) {
+        console.warn('OneSignal SDK failed to load')
+        return
+      }
+
+      await OS.init({
+        appId: APP_ID,
+        allowLocalhostAsSecureOrigin: true,
+        // Use the Workbox-generated SW which imports OneSignal's push handler
+        // via importScripts in vite.config.js. This ensures ONE SW handles
+        // both caching and push notifications.
+        serviceWorkerPath: '/sw.js',
+        notifyButton: { enable: false },
+      })
+      initialized = true
+      console.log('OneSignal SDK initialized successfully')
+    } catch (error) {
+      console.warn('OneSignal init failed:', error.message || error)
+    }
+  })()
+
+  return initPromise
 }
 
 /**
@@ -52,11 +92,24 @@ export async function initOneSignal() {
  * @param {string} uid - Firebase user UID
  */
 export async function loginOneSignal(uid) {
-  if (!APP_ID || !uid || !initialized) return
+  if (!APP_ID || !uid) return
+
+  // Ensure OneSignal is initialized before logging in
+  if (!initialized) await initOneSignal()
+  if (!initialized) return
 
   try {
-    await OneSignal.login(uid)
-    console.log('OneSignal user logged in:', uid)
+    const OS = getOS()
+    if (OS) {
+      // Clear any stale identity first to avoid 409 Conflict errors
+      try {
+        await OS.logout()
+      } catch (_) {
+        // Ignore logout errors — there may be no user logged in
+      }
+      await OS.login(uid)
+      console.log('OneSignal user logged in:', uid)
+    }
   } catch (error) {
     console.warn('OneSignal login error:', error.message)
   }
@@ -69,8 +122,11 @@ export async function logoutOneSignal() {
   if (!initialized) return
 
   try {
-    await OneSignal.logout()
-    console.log('OneSignal user logged out')
+    const OS = getOS()
+    if (OS) {
+      await OS.logout()
+      console.log('OneSignal user logged out')
+    }
   } catch (error) {
     console.warn('OneSignal logout error:', error.message)
   }
@@ -83,36 +139,52 @@ export async function logoutOneSignal() {
  * @param {string} role - 'user' | 'employee' | 'admin'
  */
 export async function tagUserRole(role) {
-  if (!role || !initialized) return
+  if (!role) return
+
+  // Ensure OneSignal is initialized before tagging
+  if (!initialized) await initOneSignal()
+  if (!initialized) return
 
   try {
-    await OneSignal.User.addTag('role', role)
-    console.log('OneSignal user tagged with role:', role)
+    const OS = getOS()
+    if (OS && OS.User) {
+      await OS.User.addTag('role', role)
+      console.log('OneSignal user tagged with role:', role)
+    }
   } catch (error) {
     console.warn('OneSignal tag error:', error.message)
   }
 }
 
 /**
- * Prompt the user for push notification permission via OneSignal.
- * Uses the native browser permission dialog only (no slidedown).
+ * Prompt the user for push notification permission.
+ * Uses the native browser permission dialog.
  * @returns {Promise<boolean>} Whether permission was granted
  */
 export async function promptForPush() {
+  // Ensure OneSignal is initialized before requesting permission
+  if (!initialized) {
+    await initOneSignal()
+  }
+
   if (!initialized) {
     console.warn('OneSignal not ready — cannot request push permission')
     return false
   }
 
   try {
-    const alreadyGranted = OneSignal.Notifications.permission
-    if (alreadyGranted) {
+    const OS = getOS()
+    if (!OS || !OS.Notifications) return false
+
+    // Already granted
+    if (OS.Notifications.permission) {
       console.log('OneSignal: push permission already granted')
       return true
     }
 
-    await OneSignal.Notifications.requestPermission()
-    const granted = OneSignal.Notifications.permission
+    // Request permission using the native browser dialog
+    await OS.Notifications.requestPermission()
+    const granted = OS.Notifications.permission
     console.log('OneSignal: push permission result:', granted)
     return granted
   } catch (error) {
@@ -129,24 +201,28 @@ export function getOneSignalPermission() {
   if (!initialized) return false
 
   try {
-    return OneSignal.Notifications.permission
+    const OS = getOS()
+    if (OS && OS.Notifications) {
+      return !!OS.Notifications.permission
+    }
+    return false
   } catch (error) {
     console.warn('OneSignal permission check error:', error.message)
     return false
   }
 }
 
+// ─── REST API Push Helpers ───────────────────────────────────────────
+
 /**
- * Send a push notification to all subscribed student users.
- * Calls the OneSignal REST API directly from the client.
- *
- * Uses tag filters to target only users with role='user' (students).
- *
- * @param {string} title - Notification heading
- * @param {string} message - Notification body
- * @param {string} [url='/dashboard'] - URL to open when notification is clicked
+ * Internal helper to send a push via the OneSignal REST API.
+ * @param {Object} bodyOverrides - Fields merged into the request body (filters, include_aliases, etc.)
+ * @param {string} title
+ * @param {string} message
+ * @param {string} url
+ * @param {string} label - Human-readable target label for logging
  */
-export async function sendPushToStudents(title, message, url = '/dashboard') {
+async function _sendPush(bodyOverrides, title, message, url, label) {
   if (!APP_ID || !REST_API_KEY) {
     console.warn('OneSignal credentials not configured, skipping push')
     return
@@ -161,28 +237,78 @@ export async function sendPushToStudents(title, message, url = '/dashboard') {
       },
       body: JSON.stringify({
         app_id: APP_ID,
-        // Target only users tagged with role=user (students)
-        filters: [
-          { field: 'tag', key: 'role', relation: '=', value: 'user' }
-        ],
         headings: { en: title },
         contents: { en: message },
         url: `https://refound-3b932.web.app${url}`,
-        chrome_web_icon: '/icons/icon-192x192.png',
-        chrome_web_badge: '/icons/icon-72x72.png',
+        chrome_web_icon: 'https://refound-3b932.web.app/icons/icon-192x192.png',
+        chrome_web_badge: 'https://refound-3b932.web.app/icons/icon-72x72.png',
+        ...bodyOverrides,
       }),
     })
 
     const data = await response.json()
 
     if (data.errors) {
-      console.warn('OneSignal push errors:', data.errors)
+      console.warn(`OneSignal push errors (${label}):`, data.errors)
     } else {
-      console.log('OneSignal push sent to', data.recipients || 0, 'students')
+      console.log(`OneSignal push sent to ${data.recipients || 0} ${label}`)
     }
 
     return data
   } catch (error) {
-    console.error('Failed to send OneSignal push:', error)
+    console.error(`Failed to send OneSignal push (${label}):`, error)
   }
+}
+
+/**
+ * Send a push notification to all subscribed student users.
+ * Uses tag filters to target only users with role='user' (students).
+ */
+export async function sendPushToStudents(title, message, url = '/dashboard') {
+  return _sendPush(
+    { filters: [{ field: 'tag', key: 'role', relation: '=', value: 'user' }] },
+    title, message, url, 'students'
+  )
+}
+
+/**
+ * Send a push notification to all subscribed employees.
+ * Uses tag filters to target only users with role='employee'.
+ */
+export async function sendPushToEmployees(title, message, url = '/emp/review-claims') {
+  return _sendPush(
+    { filters: [{ field: 'tag', key: 'role', relation: '=', value: 'employee' }] },
+    title, message, url, 'employees'
+  )
+}
+
+/**
+ * Send a push notification to all subscribed admins.
+ * Uses tag filters to target only users with role='admin'.
+ */
+export async function sendPushToAdmins(title, message, url = '/admin/dashboard') {
+  return _sendPush(
+    { filters: [{ field: 'tag', key: 'role', relation: '=', value: 'admin' }] },
+    title, message, url, 'admins'
+  )
+}
+
+/**
+ * Send a push notification to a specific user by their Firebase UID.
+ * OneSignal identifies users by the external_id set during login.
+ *
+ * @param {string} externalId - Firebase UID of the target user
+ * @param {string} title
+ * @param {string} message
+ * @param {string} [url='/notifications']
+ */
+export async function sendPushToUser(externalId, title, message, url = '/notifications') {
+  if (!externalId) return
+  return _sendPush(
+    {
+      include_aliases: { external_id: [externalId] },
+      target_channel: 'push',
+    },
+    title, message, url, `user:${externalId}`
+  )
 }

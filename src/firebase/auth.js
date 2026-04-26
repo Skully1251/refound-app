@@ -9,6 +9,8 @@ import {
 } from 'firebase/auth'
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from './config'
+import { notifyAllAdmins } from './firestore'
+import { sendPushToAdmins } from './onesignal'
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -42,6 +44,21 @@ async function createUserProfile(uid, name, email) {
       status: 'active',
       createdAt: serverTimestamp()
     })
+
+    // Notify admins about the new user (non-blocking)
+    if (role !== 'admin') {
+      notifyAllAdmins(
+        `New user registered: ${name} (${email})`,
+        'new_user'
+      ).catch(err => console.warn('Admin in-app notification for new user failed:', err))
+
+      sendPushToAdmins(
+        'New User Registered',
+        `${name} (${email}) just created an account.`,
+        '/admin/users'
+      ).catch(err => console.warn('Admin push for new user failed:', err))
+    }
+
     return role
   }
   return userSnap.data().role

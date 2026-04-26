@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { getAllUsers, updateUserStatus, createNotification, createAuditLog } from '../../firebase/firestore'
+import { sendPushToUser } from '../../firebase/onesignal'
 import { useToast } from '../../components/Toast'
 import DashboardLayout from '../../components/DashboardLayout'
 import './AdminUsers.css'
@@ -47,6 +48,15 @@ function AdminUsers() {
         message: `Your account has been suspended. Reason: ${banReason}`,
         type: 'system'
       })
+
+      // Push notification to the suspended user
+      sendPushToUser(
+        banModal.uid,
+        'Account Suspended',
+        `Your account has been suspended. Reason: ${banReason}`,
+        '/notifications'
+      ).catch(err => console.warn('Push to suspended user failed:', err))
+
       await createAuditLog({
         actionType: 'user_suspended',
         performedBy: currentUser.uid,
@@ -72,6 +82,15 @@ function AdminUsers() {
         message: 'Your account has been reactivated.',
         type: 'system'
       })
+
+      // Push notification to the reactivated user
+      sendPushToUser(
+        user.uid,
+        'Account Reactivated',
+        'Your account has been reactivated. You can now access ReFound again.',
+        '/notifications'
+      ).catch(err => console.warn('Push to reactivated user failed:', err))
+
       await fetchUsers()
     } catch (err) {
       toast.showError(err.message)

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { createItem, createAuditLog, createNotification, notifyAllStudents } from '../../firebase/firestore'
+import { createItem, createAuditLog, notifyAllStudents } from '../../firebase/firestore'
 import { uploadImageToCloudinary } from '../../firebase/cloudinary'
 import { sendPushToStudents } from '../../firebase/onesignal'
 import { useToast } from '../../components/Toast'
@@ -151,13 +151,6 @@ function ReportItem() {
         performedBy: currentUser.uid,
         performedByName: userProfile?.name || 'Employee',
         newValue: title,
-      })
-
-      // Notification to the employee
-      await createNotification({
-        userId: currentUser.uid,
-        message: `You reported "${title}" successfully.`,
-        type: 'new_item',
       })
 
       // Notify all students about the new found item (in-app Firestore notifications)

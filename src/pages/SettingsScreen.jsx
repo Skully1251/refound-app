@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { logOut } from '../firebase/auth'
-import { updateUserProfile, createPromotionRequest, hasPendingPromotion } from '../firebase/firestore'
+import { updateUserProfile, createPromotionRequest, hasPendingPromotion, notifyAllAdmins } from '../firebase/firestore'
+import { sendPushToAdmins } from '../firebase/onesignal'
 import { useToast } from '../components/Toast'
 import DashboardLayout from '../components/DashboardLayout'
 import './SettingsScreen.css'
@@ -98,6 +99,20 @@ function SettingsScreen() {
         userProfile?.name || currentUser.displayName || 'User',
         currentUser.email
       )
+
+      // Notify all admins about the promotion request (in-app + push)
+      const userName = userProfile?.name || currentUser.displayName || 'A user'
+      notifyAllAdmins(
+        `${userName} (${currentUser.email}) has requested a promotion to Employee.`,
+        'promotion_request'
+      ).catch(err => console.warn('Admin in-app notification failed:', err))
+
+      sendPushToAdmins(
+        'New Promotion Request',
+        `${userName} has requested to become an Employee. Review it now.`,
+        '/admin/dashboard'
+      ).catch(err => console.warn('Admin push notification failed:', err))
+
       setPromotionPending(true)
       setShowPromotionModal(false)
       toast.showSuccess('Promotion request sent to admin!')

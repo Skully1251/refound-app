@@ -6,7 +6,11 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // Use 'prompt' instead of 'autoUpdate'. With 'autoUpdate', the plugin
+      // internally reloads the page whenever a new SW activates — this causes
+      // infinite reload loops when competing with OneSignal's service worker.
+      // With 'prompt', the new SW installs silently and activates on next visit.
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
         name: 'ReFound - Bringing Things Back',
@@ -69,12 +73,16 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Import OneSignal's service worker into VitePWA's service worker
-        // This avoids a conflict where both try to register at scope '/'
-        importScripts: ['https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js'],
-        // Pre-cache app shell (exclude OneSignal's standalone worker files)
+        // Pre-cache app shell
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Exclude OneSignal worker files from precaching — they contain
+        // CDN imports and should not be managed by Workbox
+        globIgnores: ['**/OneSignalSDK*'],
         navigateFallbackDenylist: [/^\/OneSignalSDK/],
+        // Import OneSignal push handler into the Workbox SW so push
+        // events show actual notification content instead of the
+        // generic "This site has been updated in the background".
+        importScripts: ['https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js'],
         // Runtime caching strategies
         runtimeCaching: [
           {
@@ -133,9 +141,6 @@ export default defineConfig({
             }
           }
         ]
-      },
-      devOptions: {
-        enabled: true // Enable PWA in dev mode for testing
       }
     })
   ],

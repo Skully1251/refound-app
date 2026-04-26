@@ -17,7 +17,7 @@ const typeConfig = {
 
 function NotificationsScreen() {
   const { currentUser } = useAuth()
-  const { showToast } = useToast()
+  const toast = useToast()
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const [pushPermission, setPushPermission] = useState('checking') // start as 'checking' to avoid flash
@@ -32,24 +32,12 @@ function NotificationsScreen() {
     return unsub
   }, [currentUser])
 
-  // Check push notification permission state
+  // Check push notification permission state using the browser's native API.
+  // This is more reliable than checking OneSignal's state, which may not
+  // be initialized yet when this component first mounts.
   useEffect(() => {
-    // First check the browser's native permission
     const browserPerm = getNotificationPermissionState()
-
-    if (browserPerm === 'denied') {
-      setPushPermission('denied')
-      return
-    }
-
-    if (browserPerm === 'granted') {
-      // Browser says granted — verify with OneSignal too
-      const osGranted = getOneSignalPermission()
-      setPushPermission(osGranted ? 'granted' : 'default')
-    } else {
-      // Browser permission is 'default' — show the enable banner
-      setPushPermission('default')
-    }
+    setPushPermission(browserPerm) // 'granted', 'denied', or 'default'
   }, [])
 
   const handleEnablePush = useCallback(async () => {
@@ -60,23 +48,23 @@ function NotificationsScreen() {
       console.log('Push permission result:', granted)
       if (granted) {
         setPushPermission('granted')
-        showToast('Push notifications enabled!', 'success')
+        toast.showSuccess('Push notifications enabled!')
       } else {
         const currentPerm = getNotificationPermissionState()
         setPushPermission(currentPerm)
         if (currentPerm === 'denied') {
-          showToast('Notifications blocked. Enable them in your browser settings.', 'error')
+          toast.showError('Notifications blocked. Enable them in your browser settings.')
         } else {
-          showToast('Push notifications were not enabled. Please try again.', 'warning')
+          toast.showWarning('Push notifications were not enabled. Please try again.')
         }
       }
     } catch (err) {
       console.error('Push permission error:', err)
-      showToast('Failed to enable notifications', 'error')
+      toast.showError('Failed to enable notifications')
     } finally {
       setRequestingPush(false)
     }
-  }, [showToast])
+  }, [toast])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 

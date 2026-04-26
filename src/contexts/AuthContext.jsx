@@ -76,7 +76,9 @@ export function AuthProvider({ children }) {
         setCurrentUser(null)
         setUserProfile(null)
         setLoading(false)
-        logoutOneSignal()
+        // Do NOT call logoutOneSignal() here — it modifies SW state
+        // and can trigger page reload loops. OneSignal will naturally
+        // disassociate when the browser session ends.
       }
     })
 

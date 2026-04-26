@@ -6,6 +6,7 @@ import {
   updateItemStatus, lockItem, unlockItem,
   createNotification, createAuditLog
 } from '../../firebase/firestore'
+import { sendPushToUser } from '../../firebase/onesignal'
 import { useToast } from '../../components/Toast'
 import DashboardLayout from '../../components/DashboardLayout'
 import './ReviewClaims.css'
@@ -120,19 +121,20 @@ function ReviewClaims() {
       await approveClaimTransaction(reviewClaim.id, reviewClaim.itemId, currentUser.uid)
       await rejectOtherPendingClaims(reviewClaim.itemId, reviewClaim.id)
 
-      // Notify the claimant
+      // Notify the claimant (in-app)
       await createNotification({
         userId: reviewClaim.userId,
         message: `Your claim for "${reviewItem?.title || 'item'}" has been approved! Please visit the helpdesk to collect it.`,
         type: 'claim_update'
       })
 
-      // Notify the reviewing employee
-      await createNotification({
-        userId: currentUser.uid,
-        message: `You approved the claim for "${reviewItem?.title || 'item'}" by ${reviewUser?.name || 'a user'}.`,
-        type: 'claim_update'
-      })
+      // Push notification to the claimant
+      sendPushToUser(
+        reviewClaim.userId,
+        'Claim Approved! ✅',
+        `Your claim for "${reviewItem?.title || 'item'}" has been approved! Visit the helpdesk to collect it.`,
+        '/my-claims'
+      ).catch(err => console.warn('Push to claimant failed:', err))
 
       // Audit log
       await createAuditLog({
@@ -171,19 +173,20 @@ function ReviewClaims() {
 
       await unlockItem(reviewClaim.itemId)
 
-      // Notify the claimant
+      // Notify the claimant (in-app)
       await createNotification({
         userId: reviewClaim.userId,
         message: `Your claim for "${reviewItem?.title || 'item'}" was rejected. Reason: ${rejectReason}`,
         type: 'claim_update'
       })
 
-      // Notify the reviewing employee
-      await createNotification({
-        userId: currentUser.uid,
-        message: `You rejected the claim for "${reviewItem?.title || 'item'}" by ${reviewUser?.name || 'a user'}.`,
-        type: 'claim_update'
-      })
+      // Push notification to the claimant
+      sendPushToUser(
+        reviewClaim.userId,
+        'Claim Rejected',
+        `Your claim for "${reviewItem?.title || 'item'}" was rejected. Reason: ${rejectReason}`,
+        '/my-claims'
+      ).catch(err => console.warn('Push to claimant failed:', err))
 
       await createAuditLog({
         actionType: 'claim_rejected',
