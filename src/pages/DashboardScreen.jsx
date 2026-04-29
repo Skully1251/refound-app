@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { subscribeToItems, createClaim, getUserClaimsForItem, notifyAllEmployees } from '../firebase/firestore'
 import { sendPushToEmployees } from '../firebase/onesignal'
 import { uploadImageToCloudinary } from '../firebase/cloudinary'
+import { extractIdCardDetails } from '../firebase/groq'
 import { useToast } from '../components/Toast'
 import DashboardLayout from '../components/DashboardLayout'
 import './DashboardScreen.css'
@@ -58,11 +59,15 @@ function DashboardScreen() {
   const [claimAnswers, setClaimAnswers] = useState({})
   const [claimLocation, setClaimLocation] = useState('')
   const [claimDescription, setClaimDescription] = useState('')
-  const [claimEnrollment, setClaimEnrollment] = useState('')
   const [claimIdCard, setClaimIdCard] = useState(null)
   const [claimIdCardPreview, setClaimIdCardPreview] = useState('')
   const [claimLoading, setClaimLoading] = useState(false)
   const [claimError, setClaimError] = useState('')
+
+  // OCR extraction state
+  const [ocrData, setOcrData] = useState({ name: '', enrollmentNumber: '', phoneNumber: '' })
+  const [ocrLoading, setOcrLoading] = useState(false)
+  const [ocrStatus, setOcrStatus] = useState('idle') // idle | scanning | success | error
 
   useEffect(() => {
     const unsub = subscribeToItems((data) => setItems(data))
@@ -137,10 +142,12 @@ function DashboardScreen() {
     setClaimAnswers({})
     setClaimLocation('')
     setClaimDescription('')
-    setClaimEnrollment('')
     setClaimIdCard(null)
     setClaimIdCardPreview('')
     setClaimError('')
+    setOcrData({ name: '', enrollmentNumber: '', phoneNumber: '' })
+    setOcrStatus('idle')
+    setOcrLoading(false)
   }
 
   // Helper: extract question text from either string or object format
@@ -150,11 +157,66 @@ function DashboardScreen() {
     return ''
   }
 
+  // Handle ID card upload and trigger OCR extraction
+  const handleIdCardUpload = async (file) => {
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      setClaimError('ID card image must be under 5MB.')
+      return
+    }
+
+    setClaimIdCard(file)
+    setClaimIdCardPreview(URL.createObjectURL(file))
+    setClaimError('')
+
+    // Start OCR extraction
+    setOcrLoading(true)
+    setOcrStatus('scanning')
+    try {
+      const extracted = await extractIdCardDetails(file)
+      setOcrData({
+        name: extracted.name || '',
+        enrollmentNumber: extracted.enrollmentNumber || '',
+        phoneNumber: extracted.phoneNumber || '',
+      })
+      setOcrStatus('success')
+
+      // Show feedback based on what was extracted
+      const fieldsFound = [
+        extracted.name && 'Name',
+        extracted.enrollmentNumber && 'Enrollment',
+        extracted.phoneNumber && 'Phone',
+      ].filter(Boolean)
+
+      if (fieldsFound.length > 0) {
+        toast.showSuccess(`Extracted: ${fieldsFound.join(', ')}`)
+      } else {
+        setOcrStatus('error')
+        toast.showWarning('Could not extract details. Please enter manually.')
+      }
+    } catch (err) {
+      console.warn('OCR extraction failed:', err)
+      setOcrStatus('error')
+      // Don't block the user — let them enter manually
+    } finally {
+      setOcrLoading(false)
+    }
+  }
+
+  // Remove uploaded ID card and reset OCR
+  const handleIdCardRemove = () => {
+    setClaimIdCard(null)
+    setClaimIdCardPreview('')
+    setOcrData({ name: '', enrollmentNumber: '', phoneNumber: '' })
+    setOcrStatus('idle')
+    setOcrLoading(false)
+  }
+
   const handleClaimSubmit = async () => {
     if (!claimModal) return
 
     // Validate enrollment number
-    if (!claimEnrollment.trim()) {
+    if (!ocrData.enrollmentNumber.trim()) {
       setClaimError('Enrollment number is required.')
       return
     }
@@ -185,7 +247,9 @@ function DashboardScreen() {
         userId: currentUser.uid,
         userName: currentUser.displayName || 'User',
         userEmail: currentUser.email,
-        enrollmentNumber: claimEnrollment.trim(),
+        enrollmentNumber: ocrData.enrollmentNumber.trim(),
+        ocrName: ocrData.name.trim() || null,
+        phoneNumber: ocrData.phoneNumber.trim() || null,
         idCardUrl,
         estimatedLocation: claimLocation.trim() || null,
         itemDescription: claimDescription.trim() || null,
@@ -336,29 +400,12 @@ function DashboardScreen() {
         <div className="claim-modal-overlay" onClick={() => setClaimModal(null)}>
           <div className="claim-modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="claim-modal-title">Claim: {claimModal.title}</h3>
-            <p className="claim-modal-subtitle">Provide details and answer the verification questions to submit your claim.</p>
+            <p className="claim-modal-subtitle">Upload your ID card to auto-extract details, then answer the verification questions.</p>
 
             {claimError && <div className="auth-error">{claimError}</div>}
 
-            {/* Required identity fields */}
+            {/* ID Card Upload */}
             <div className="claim-extra-fields">
-              <div className="claim-field-group">
-                <label className="claim-field-label">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                    <line x1="8" y1="21" x2="16" y2="21" />
-                    <line x1="12" y1="17" x2="12" y2="21" />
-                  </svg>
-                  Enrollment Number <span className="claim-required">*</span>
-                </label>
-                <input
-                  className="claim-question-input"
-                  type="text"
-                  placeholder="e.g. 22014802720"
-                  value={claimEnrollment}
-                  onChange={(e) => setClaimEnrollment(e.target.value)}
-                />
-              </div>
               <div className="claim-field-group">
                 <label className="claim-field-label">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -372,7 +419,7 @@ function DashboardScreen() {
                   {claimIdCardPreview ? (
                     <div className="claim-idcard-preview-wrapper">
                       <img className="claim-idcard-preview" src={claimIdCardPreview} alt="ID Card" />
-                      <button className="claim-idcard-remove" onClick={() => { setClaimIdCard(null); setClaimIdCardPreview('') }}>✕</button>
+                      <button className="claim-idcard-remove" onClick={handleIdCardRemove}>✕</button>
                     </div>
                   ) : (
                     <label className="claim-idcard-btn">
@@ -388,15 +435,7 @@ function DashboardScreen() {
                         style={{ display: 'none' }}
                         onChange={(e) => {
                           const file = e.target.files[0]
-                          if (file) {
-                            if (file.size > 5 * 1024 * 1024) {
-                              setClaimError('ID card image must be under 5MB.')
-                              return
-                            }
-                            setClaimIdCard(file)
-                            setClaimIdCardPreview(URL.createObjectURL(file))
-                            setClaimError('')
-                          }
+                          if (file) handleIdCardUpload(file)
                         }}
                       />
                     </label>
@@ -404,6 +443,115 @@ function DashboardScreen() {
                 </div>
               </div>
             </div>
+
+            {/* OCR Extracted Details */}
+            {(ocrStatus !== 'idle' || claimIdCardPreview) && (
+              <>
+                <div className="claim-divider">
+                  <span>
+                    {ocrLoading ? 'Scanning ID Card...' : 'Extracted Details'}
+                  </span>
+                </div>
+
+                {/* Scanning animation */}
+                {ocrLoading && (
+                  <div className="ocr-scanning-wrapper">
+                    <div className="ocr-scanning-bar"></div>
+                    <div className="ocr-scanning-text">
+                      <svg className="ocr-scanning-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 6V1h5" /><path d="M1 18v5h5" /><path d="M18 1h5v5" /><path d="M18 23h5v-5" />
+                        <line x1="7" y1="12" x2="17" y2="12" />
+                      </svg>
+                      Analyzing ID card with AI...
+                    </div>
+                  </div>
+                )}
+
+                {/* OCR error message */}
+                {ocrStatus === 'error' && !ocrLoading && (
+                  <div className="ocr-error-msg">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                    Could not extract details automatically. Please enter them manually below.
+                  </div>
+                )}
+
+                {/* OCR success message */}
+                {ocrStatus === 'success' && !ocrLoading && (
+                  <div className="ocr-success-msg">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                    Details extracted! Please verify and correct if needed.
+                  </div>
+                )}
+
+                {/* AI disclaimer */}
+                {(ocrStatus === 'success' || ocrStatus === 'error') && !ocrLoading && (
+                  <div className="ocr-ai-disclaimer">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
+                    <span>AI extraction may not be 100% accurate. Please verify all details before submitting your claim.</span>
+                  </div>
+                )}
+
+                {/* Extracted fields (always editable) */}
+                {!ocrLoading && (
+                  <div className="claim-extra-fields ocr-fields">
+                    <div className="claim-field-group">
+                      <label className="claim-field-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        Name <span className="claim-optional">(from ID card)</span>
+                      </label>
+                      <input
+                        className={`claim-question-input ${ocrStatus === 'success' && ocrData.name ? 'ocr-filled' : ''}`}
+                        type="text"
+                        placeholder="e.g. Om Negi"
+                        value={ocrData.name}
+                        onChange={(e) => setOcrData({ ...ocrData, name: e.target.value })}
+                      />
+                    </div>
+                    <div className="claim-field-group">
+                      <label className="claim-field-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                          <line x1="8" y1="21" x2="16" y2="21" />
+                          <line x1="12" y1="17" x2="12" y2="21" />
+                        </svg>
+                        Enrollment Number <span className="claim-required">*</span>
+                      </label>
+                      <input
+                        className={`claim-question-input ${ocrStatus === 'success' && ocrData.enrollmentNumber ? 'ocr-filled' : ''}`}
+                        type="text"
+                        placeholder="e.g. 22014802720"
+                        value={ocrData.enrollmentNumber}
+                        onChange={(e) => setOcrData({ ...ocrData, enrollmentNumber: e.target.value })}
+                      />
+                    </div>
+                    <div className="claim-field-group">
+                      <label className="claim-field-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
+                        Phone Number <span className="claim-optional">(from ID card)</span>
+                      </label>
+                      <input
+                        className={`claim-question-input ${ocrStatus === 'success' && ocrData.phoneNumber ? 'ocr-filled' : ''}`}
+                        type="text"
+                        placeholder="e.g. 9876543210"
+                        value={ocrData.phoneNumber}
+                        onChange={(e) => setOcrData({ ...ocrData, phoneNumber: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Divider */}
             <div className="claim-divider">
@@ -473,7 +621,7 @@ function DashboardScreen() {
 
             <div className="claim-modal-actions">
               <button className="claim-modal-cancel" onClick={() => setClaimModal(null)}>Cancel</button>
-              <button className="claim-modal-submit" onClick={handleClaimSubmit} disabled={claimLoading}>
+              <button className="claim-modal-submit" onClick={handleClaimSubmit} disabled={claimLoading || ocrLoading}>
                 {claimLoading ? 'Submitting...' : 'Submit Claim'}
               </button>
             </div>

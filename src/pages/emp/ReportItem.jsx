@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { createItem, createAuditLog, notifyAllStudents } from '../../firebase/firestore'
 import { uploadImageToCloudinary } from '../../firebase/cloudinary'
+import { categorizeItemFromImage } from '../../firebase/groq'
 import { sendPushToStudents } from '../../firebase/onesignal'
 import { useToast } from '../../components/Toast'
 import DashboardLayout from '../../components/DashboardLayout'
@@ -47,6 +48,10 @@ function ReportItem() {
   const [error, setError] = useState('')
   const [uploadProgress, setUploadProgress] = useState('')
 
+  // AI categorization state
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiStatus, setAiStatus] = useState('idle') // idle | scanning | success | error
+
   // Compute max datetime: now + 5 minutes
   const maxDateTime = useMemo(() => {
     const now = new Date()
@@ -75,18 +80,57 @@ function ReportItem() {
     }
   }
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0]
-    if (file) {
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Image must be under 5MB.')
-        return
-      }
-      setImageFile(file)
-      setImagePreview(URL.createObjectURL(file))
-      setError('')
+    if (!file) return
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be under 5MB.')
+      return
     }
+
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+    setError('')
+
+    // Trigger AI categorization
+    setAiLoading(true)
+    setAiStatus('scanning')
+    try {
+      const result = await categorizeItemFromImage(file)
+
+      // Auto-fill fields
+      if (result.title) setTitle(result.title)
+      if (result.description) setDescription(result.description)
+      if (result.category) {
+        handleCategoryChange(result.category)
+      }
+
+      setAiStatus('success')
+
+      const filled = [
+        result.title && 'Title',
+        result.category && 'Category',
+        result.description && 'Description',
+      ].filter(Boolean)
+      if (filled.length > 0) {
+        toast.showSuccess(`AI filled: ${filled.join(', ')}`)
+      }
+    } catch (err) {
+      console.warn('AI categorization failed:', err)
+      setAiStatus('error')
+      toast.showWarning('AI could not analyze the image. Please fill in the details manually.')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  const handleImageRemove = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    setAiStatus('idle')
+    setAiLoading(false)
   }
 
   const handleQuestionChange = (idx, field, val) => {
@@ -191,7 +235,9 @@ function ReportItem() {
         <div className="report-image-upload">
           <label htmlFor="item-image" className="report-image-label">
             {imagePreview ? (
-              <img src={imagePreview} alt="Preview" className="report-image-preview" />
+              <div className="report-image-preview-wrapper">
+                <img src={imagePreview} alt="Preview" className="report-image-preview" />
+              </div>
             ) : (
               <div className="report-image-placeholder">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -211,18 +257,67 @@ function ReportItem() {
             onChange={handleImageChange}
             style={{ display: 'none' }}
           />
+          {imagePreview && (
+            <button type="button" className="report-image-remove-btn" onClick={handleImageRemove}>
+              ✕ Remove Image
+            </button>
+          )}
           {uploadProgress && <span className="report-upload-status">{uploadProgress}</span>}
         </div>
+
+        {/* AI scanning status */}
+        {aiLoading && (
+          <div className="report-ai-scanning">
+            <div className="report-ai-scanning-bar"></div>
+            <div className="report-ai-scanning-text">
+              <svg className="report-ai-scanning-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 6V1h5" /><path d="M1 18v5h5" /><path d="M18 1h5v5" /><path d="M18 23h5v-5" />
+                <line x1="7" y1="12" x2="17" y2="12" />
+              </svg>
+              AI is analyzing the item...
+            </div>
+          </div>
+        )}
+
+        {/* AI success */}
+        {aiStatus === 'success' && !aiLoading && (
+          <div className="report-ai-success">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            AI has auto-filled the details below. Please review before submitting.
+          </div>
+        )}
+
+        {/* AI error */}
+        {aiStatus === 'error' && !aiLoading && (
+          <div className="report-ai-error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            Could not analyze the image. Please fill in the details manually.
+          </div>
+        )}
+
+        {/* AI disclaimer */}
+        {(aiStatus === 'success' || aiStatus === 'error') && !aiLoading && (
+          <div className="report-ai-disclaimer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span>AI suggestions may not be fully accurate. Please verify and edit the Title, Category, and Description before reporting.</span>
+          </div>
+        )}
 
         {/* Fields */}
         <div className="report-field">
           <label className="report-label">Title *</label>
-          <input className="report-input" type="text" placeholder="e.g. Blue Backpack" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input className={`report-input ${aiStatus === 'success' && title ? 'ai-filled' : ''}`} type="text" placeholder="e.g. Blue Backpack" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
 
         <div className="report-field">
           <label className="report-label">Category *</label>
-          <select className="report-select" value={category} onChange={(e) => handleCategoryChange(e.target.value)}>
+          <select className={`report-select ${aiStatus === 'success' && category ? 'ai-filled' : ''}`} value={category} onChange={(e) => handleCategoryChange(e.target.value)}>
             <option value="">Select category</option>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -240,7 +335,7 @@ function ReportItem() {
 
         <div className="report-field">
           <label className="report-label">Description</label>
-          <textarea className="report-textarea" rows="3" placeholder="Describe the item..." value={description} onChange={(e) => setDescription(e.target.value)} />
+          <textarea className={`report-textarea ${aiStatus === 'success' && description ? 'ai-filled' : ''}`} rows="3" placeholder="Describe the item..." value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
 
         {/* Questions with Expected Answers */}
@@ -278,7 +373,7 @@ function ReportItem() {
           ))}
         </div>
 
-        <button type="submit" className="report-submit-btn" disabled={loading}>
+        <button type="submit" className="report-submit-btn" disabled={loading || aiLoading}>
           {loading ? (uploadProgress || 'Reporting...') : 'Report Item'}
         </button>
       </form>

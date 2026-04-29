@@ -356,6 +356,33 @@ function ReviewClaims() {
             <div className="rc-modal-section">
               <h4>Claimant: {reviewUser?.name || reviewClaim.userEmail}</h4>
               <p className="rc-modal-meta">{reviewClaim.userEmail}</p>
+              {reviewClaim.enrollmentNumber && (
+                <p className="rc-modal-meta">
+                  <strong>Enrollment:</strong> {reviewClaim.enrollmentNumber}
+                </p>
+              )}
+              {reviewClaim.ocrName && (
+                <p className="rc-modal-meta">
+                  <strong>Name (from ID):</strong> {reviewClaim.ocrName}
+                </p>
+              )}
+              {reviewClaim.phoneNumber && (
+                <p className="rc-modal-meta">
+                  <strong>Phone:</strong> {reviewClaim.phoneNumber}
+                </p>
+              )}
+              {reviewClaim.idCardUrl && (
+                <div style={{ marginTop: '8px' }}>
+                  <a href={reviewClaim.idCardUrl} target="_blank" rel="noopener noreferrer" className="rc-idcard-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    View ID Card
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Answer comparison */}

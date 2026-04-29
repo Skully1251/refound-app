@@ -348,3 +348,27 @@
 .rc-modal-close:hover {
   background: #e2e8f0;
 }
+
+/* ===== ID Card Link ===== */
+.rc-idcard-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(74, 144, 217, 0.08);
+  color: #4A90D9;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.rc-idcard-link:hover {
+  background: rgba(74, 144, 217, 0.15);
+}
+
+.rc-modal-meta strong {
+  color: var(--text-dark, #1e293b);
+  font-weight: 600;
+}

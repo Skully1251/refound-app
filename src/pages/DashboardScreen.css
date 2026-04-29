@@ -526,3 +526,119 @@
 .claim-idcard-remove:hover {
   transform: scale(1.1);
 }
+
+/* ===== OCR Scanning Animation ===== */
+.ocr-scanning-wrapper {
+  position: relative;
+  padding: 18px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(232, 117, 42, 0.04), rgba(74, 144, 217, 0.04));
+  border: 1.5px solid rgba(232, 117, 42, 0.15);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.ocr-scanning-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  animation: ocrScanMove 1.8s ease-in-out infinite;
+}
+
+@keyframes ocrScanMove {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.ocr-scanning-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--orange);
+}
+
+.ocr-scanning-icon {
+  animation: ocrPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ocrPulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* ===== OCR Status Messages ===== */
+.ocr-success-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(39, 174, 96, 0.08);
+  border: 1px solid rgba(39, 174, 96, 0.2);
+  color: #047857;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.ocr-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+/* ===== OCR Auto-Filled Fields ===== */
+.ocr-fields {
+  animation: ocrFieldsFadeIn 0.4s ease-out;
+}
+
+@keyframes ocrFieldsFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ocr-filled {
+  border-color: rgba(39, 174, 96, 0.4) !important;
+  background: rgba(39, 174, 96, 0.04) !important;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.ocr-filled:focus {
+  border-color: var(--orange) !important;
+  background: var(--bg-primary, #f5f6fa) !important;
+}
+
+/* ===== AI Disclaimer Banner ===== */
+.ocr-ai-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(180, 83, 9, 0.06);
+  border: 1px solid rgba(180, 83, 9, 0.18);
+  color: #92400e;
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+.ocr-ai-disclaimer svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  stroke: #b45309;
+}

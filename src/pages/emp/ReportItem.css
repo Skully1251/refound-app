@@ -234,3 +234,131 @@
   background: var(--bg-primary) !important;
   border-color: var(--border-light) !important;
 }
+
+/* ===== Image Remove Button ===== */
+.report-image-preview-wrapper {
+  position: relative;
+}
+
+.report-image-remove-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.06);
+  color: #dc2626;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid rgba(220, 38, 38, 0.15);
+}
+
+.report-image-remove-btn:hover {
+  background: rgba(220, 38, 38, 0.12);
+}
+
+/* ===== AI Scanning Animation ===== */
+.report-ai-scanning {
+  position: relative;
+  padding: 18px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(232, 117, 42, 0.04), rgba(74, 144, 217, 0.04));
+  border: 1.5px solid rgba(232, 117, 42, 0.15);
+  overflow: hidden;
+}
+
+.report-ai-scanning-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  animation: reportAiScanMove 1.8s ease-in-out infinite;
+}
+
+@keyframes reportAiScanMove {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.report-ai-scanning-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--orange);
+}
+
+.report-ai-scanning-icon {
+  animation: reportAiPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes reportAiPulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* ===== AI Status Messages ===== */
+.report-ai-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(39, 174, 96, 0.08);
+  border: 1px solid rgba(39, 174, 96, 0.2);
+  color: #047857;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.report-ai-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* ===== AI Disclaimer ===== */
+.report-ai-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(180, 83, 9, 0.06);
+  border: 1px solid rgba(180, 83, 9, 0.18);
+  color: #92400e;
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.report-ai-disclaimer svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  stroke: #b45309;
+}
+
+/* ===== AI Auto-Filled Field Highlight ===== */
+.ai-filled {
+  border-color: rgba(39, 174, 96, 0.4) !important;
+  background: rgba(39, 174, 96, 0.04) !important;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.ai-filled:focus {
+  border-color: var(--orange) !important;
+  background: var(--bg-white) !important;
+}
